@@ -35,8 +35,8 @@ jobs:
         secrets: inherit
 
     # Code Tests
-    code-tests:
-        uses: ./.github/workflows/code-tests.yml
+    code-test:
+        uses: ./.github/workflows/code-test.yml
 
     # push-to-docker-hub:
     docker-push:
