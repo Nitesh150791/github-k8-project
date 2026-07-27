@@ -1,0 +1,54 @@
+# Goal - To Run End to End DevSecOps CI Pipeline
+
+name: DevSecOps
+
+on:
+    push:
+        branches: [master]
+
+jobs:
+
+    ## ---- CI ----
+    # Code Stage 
+    code-quality:
+        uses: ./.github/workflows/code-quality.yml@main
+
+
+    # Secret Scanning
+    secret-scanning:
+        uses: ./.github/workflows/secret-scanning.yml@main
+
+    # Dependency Checks
+    dependency-checks:
+        uses: ./.github/workflows/dependency-scan.yml@main
+
+    # Docker Checks
+    docker-checks:
+        uses: ./.github/workflows/docker-scans.yml@main
+        secrets: inherit 
+
+    # SonarQube
+    sonar-qube:
+        uses: ./.github/workflows/sonar-scan.yml@main
+        secrets: inherit
+
+    # Code Tests
+    code-tests:
+        uses: ./.github/workflows/code-tests.yml@main
+
+    # push-to-docker-hub:
+    docker-push:
+        uses: ./.github/workflows/docker-push.yml@main
+        needs: [code-quality,code-tests,sonar-qube,docker-checks,dependency-checks,secret-scanning]
+        secrets: inherit
+
+    ## ---- CD -----
+    deploy:
+        needs: [docker-push]
+        uses: ./.github/workflows/deploy.yml@main
+        secrets: inherit
+
+    dast-scan:
+        needs: [deploy]
+        uses: ./.github/workflows/dast.yml@main
+        secrets: inherit
