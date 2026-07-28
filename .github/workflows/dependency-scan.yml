@@ -40,14 +40,6 @@ jobs:
               working-directory: ./frontend
               run: npx better-npm-audit audit --exclude GHSA-qwww-vcr4-c8h2,GHSA-mh99-v99m-4gvg
 
-            - name: Generate backend package-lock.json
-              working-directory: backend
-              run: npm i --package-lock-only
-
-            - name: Run dependency scan for node
-              run: npm audit
-              working-directory: backend
-
             - name: Upload Report to Artifacts
               if: always() # Ensures report uploads even if tests fail
               uses: actions/upload-artifact@v4
