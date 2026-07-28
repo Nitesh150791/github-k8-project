@@ -1,4 +1,4 @@
-import { useLocation, useMatch, Link } from 'react-router-dom';
+import { useLocation, useMatch, Link } from 'react-router';
 import { IconBell, IconChevronRight, IconCircleFilled } from '@tabler/icons-react';
 import { CommandBar } from './CommandBar';
 import { ProfileMenu } from './ProfileMenu';

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { IconSearch, IconCornerDownLeft } from '@tabler/icons-react';
 import { StatusBadge } from '../ui/Badge';
 import { api } from '../../api/client';
