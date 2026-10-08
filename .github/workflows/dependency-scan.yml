@@ -38,6 +38,10 @@ jobs:
               run: npm audit
               working-directory: frontend
 
+            - name: Run npm audit
+             working-directory: ./frontend
+             run: npm audit --omit=dev --audit-level=high
+
             - name: Upload Report to Artifacts
               if: always() # Ensures report uploads even if tests fail
               uses: actions/upload-artifact@v4
