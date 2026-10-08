@@ -1,28 +1,48 @@
-# Goal: To deploy the built images from CI Steps once the CI Worklow is Succeeded
+name: CD - GitOps
 
-name: CD
-
-on: 
-    workflow_call:
+on:
+  workflow_call:
+    secrets:
+      GITOPS_TOKEN:
+        required: true
 
 jobs:
-    deploy:
-        
-        runs-on: self-hosted
-        steps:
-            - name: Code Checkout
-              uses: actions/checkout@v7
+  update-gitops:
 
-            - name: Copy Example Env to main env
-              run: cp .env.example .env
+    runs-on: ubuntu-latest
 
-            - name: Docker Setup [Login]
-              uses: docker/login-action@v4
-              with:
-                username: ${{ vars.DOCKERHUB_USERNAME }}
-                password: ${{ secrets.DOCKERHUB_TOKEN }}
+    steps:
 
-            - name: Deploy the containers with Docker Compose
-              run: |
-                docker compose pull
-                docker compose up -d
+      - name: Checkout Application Repository
+        uses: actions/checkout@v7
+
+      - name: Checkout GitOps Repository
+        uses: actions/checkout@v7
+        with:
+          repository: Nitesh150791/gitops-repo
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops-repo
+
+      - name: Update Backend Image
+        run: |
+          sed -i "s|image:.*devboard-backend.*|image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:${{ github.sha }}|" \
+          gitops-repo/backend/deployment.yaml
+
+      - name: Update Frontend Image
+        run: |
+          sed -i "s|image:.*devboard-frontend.*|image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend:${{ github.sha }}|" \
+          gitops-repo/frontend/deployment.yaml
+
+      - name: Commit GitOps Changes
+        run: |
+          cd gitops-repo
+
+          git config user.name "nitesh150791"
+
+          git config user.email "nmore1507@gmail.com"
+
+          git add .
+
+          git commit -m "Deploy ${{ github.sha }}" || echo "No changes to commit"
+
+          git push
