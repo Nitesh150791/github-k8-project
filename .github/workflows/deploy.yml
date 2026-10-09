@@ -1,3 +1,4 @@
+
 name: CD - GitOps
 
 on:
@@ -9,6 +10,7 @@ on:
 jobs:
   update-gitops:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout GitOps Repository
         uses: actions/checkout@v7
@@ -18,7 +20,21 @@ jobs:
           path: gitops-repo
 
       - name: Show GitOps repo files
-        run: ls -la gitops-repo
+        run: |
+          echo "GitOps repository structure:"
+          find gitops-repo -type f
+
+      - name: Validate Deployment Files
+        run: |
+          test -f gitops-repo/k8s/backend-deployment.yml || {
+            echo "ERROR: Backend deployment YAML not found"
+            exit 1
+          }
+
+          test -f gitops-repo/k8s/frontend-deployment.yml || {
+            echo "ERROR: Frontend deployment YAML not found"
+            exit 1
+          }
 
       - name: Update Backend Image
         run: |
@@ -36,7 +52,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "109646228+Nitesh150791@users.noreply.github.com"
           git diff
-          git add .
-          git commit -m "Deploy ${{ github.sha }}" || echo "No changes to commit"
-          git pull --rebase
-          git push
+
+          git add k8s/backend-deployment.yml k8s/frontend-deployment.yml
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "Deploy ${{ github.sha }}"
+          git pull --rebase origin main
+          git push origin HEAD:main
