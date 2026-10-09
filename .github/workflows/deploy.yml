@@ -8,14 +8,8 @@ on:
 
 jobs:
   update-gitops:
-
     runs-on: ubuntu-latest
-
     steps:
-
-      - name: Checkout Application Repository
-        uses: actions/checkout@v7
-
       - name: Checkout GitOps Repository
         uses: actions/checkout@v7
         with:
@@ -23,26 +17,26 @@ jobs:
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops-repo
 
+      - name: Show GitOps repo files
+        run: ls -la gitops-repo
+
       - name: Update Backend Image
         run: |
           sed -i "s|image:.*devboard-backend.*|image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:${{ github.sha }}|" \
-          gitops-repo/backend/deployment.yaml
+            gitops-repo/backend-deployment.yml
 
       - name: Update Frontend Image
         run: |
           sed -i "s|image:.*devboard-frontend.*|image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend:${{ github.sha }}|" \
-          gitops-repo/frontend/deployment.yaml
+            gitops-repo/frontend-deployment.yml
 
       - name: Commit GitOps Changes
+        working-directory: gitops-repo
         run: |
-          cd gitops-repo
-
-          git config user.name "nitesh150791"
-
-          git config user.email "nmore1507@gmail.com"
-
+          git config user.name "github-actions[bot]"
+          git config user.email "109646228+Nitesh150791@users.noreply.github.com"
+          git diff
           git add .
-
           git commit -m "Deploy ${{ github.sha }}" || echo "No changes to commit"
-
+          git pull --rebase
           git push
