@@ -23,12 +23,12 @@ jobs:
       - name: Update Backend Image
         run: |
           sed -i "s|image:.*devboard-backend.*|image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:${{ github.sha }}|" \
-            gitops-repo/backend-deployment.yml
+            gitops-repo/k8s/backend-deployment.yml
 
       - name: Update Frontend Image
         run: |
           sed -i "s|image:.*devboard-frontend.*|image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend:${{ github.sha }}|" \
-            gitops-repo/frontend-deployment.yml
+            gitops-repo/k8s/frontend-deployment.yml
 
       - name: Commit GitOps Changes
         working-directory: gitops-repo
