@@ -15,7 +15,7 @@ jobs:
       - name: Checkout GitOps Repository
         uses: actions/checkout@v7
         with:
-          repository: Nitesh150791/gitops-repo
+          repository: Nitesh150791/github-k8-project
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops-repo
 
@@ -47,7 +47,7 @@ jobs:
             gitops-repo/k8s/frontend-deployment.yml
 
       - name: Commit GitOps Changes
-        working-directory: gitops-repo
+        working-directory: github-k8-project
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "109646228+Nitesh150791@users.noreply.github.com"
