@@ -1,5 +1,5 @@
-
-name: CD - GitOps
+```yaml
+name: CD - Update Kubernetes Manifests
 
 on:
   workflow_call:
@@ -8,58 +8,74 @@ on:
         required: true
 
 jobs:
-  update-gitops:
+  update-manifests:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
-      - name: Checkout GitOps Repository
+      - name: Checkout Kubernetes Repository
         uses: actions/checkout@v7
         with:
           repository: Nitesh150791/github-k8-project
           token: ${{ secrets.GITOPS_TOKEN }}
-          path: gitops-repo
+          ref: main
+          path: github-k8-project
 
-      - name: Show GitOps repo files
+      - name: Verify Kubernetes Deployment Files
+        working-directory: github-k8-project
         run: |
-          echo "GitOps repository structure:"
-          find gitops-repo -type f
+          echo "Files in k8s folder:"
+          find k8s -maxdepth 2 -type f
 
-      - name: Validate Deployment Files
-        run: |
-          test -f gitops-repo/k8s/backend-deployment.yml || {
-            echo "ERROR: Backend deployment YAML not found"
+          test -f k8s/backend-deployment.yml || {
+            echo "ERROR: k8s/backend-deployment.yml not found"
             exit 1
           }
 
-          test -f gitops-repo/k8s/frontend-deployment.yml || {
-            echo "ERROR: Frontend deployment YAML not found"
+          test -f k8s/frontend-deployment.yml || {
+            echo "ERROR: k8s/frontend-deployment.yml not found"
             exit 1
           }
 
       - name: Update Backend Image
+        working-directory: github-k8-project
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
         run: |
-          sed -i "s|image:.*devboard-backend.*|image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:${{ github.sha }}|" \
-            gitops-repo/k8s/backend-deployment.yml
+          sed -i \
+            "s|image:.*devboard-backend.*|image: ${DOCKERHUB_USERNAME}/devboard-backend:${IMAGE_TAG}|" \
+            k8s/backend-deployment.yml
 
       - name: Update Frontend Image
-        run: |
-          sed -i "s|image:.*devboard-frontend.*|image: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend:${{ github.sha }}|" \
-            gitops-repo/k8s/frontend-deployment.yml
-
-      - name: Commit GitOps Changes
         working-directory: github-k8-project
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        run: |
+          sed -i \
+            "s|image:.*devboard-frontend.*|image: ${DOCKERHUB_USERNAME}/devboard-frontend:${IMAGE_TAG}|" \
+            k8s/frontend-deployment.yml
+
+      - name: Commit and Push Changes
+        working-directory: github-k8-project
+        env:
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "109646228+Nitesh150791@users.noreply.github.com"
-          git diff
 
-          git add k8s/backend-deployment.yml k8s/frontend-deployment.yml
+          git add k8s/backend-deployment.yml \
+                  k8s/frontend-deployment.yml
 
           if git diff --cached --quiet; then
-            echo "No changes to commit"
+            echo "No manifest changes to commit"
             exit 0
           fi
 
-          git commit -m "Deploy ${{ github.sha }}"
+          git commit -m "Deploy ${IMAGE_TAG}"
           git pull --rebase origin main
           git push origin HEAD:main
+```
