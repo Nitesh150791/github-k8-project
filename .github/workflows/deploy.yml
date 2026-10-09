@@ -1,4 +1,4 @@
-```yaml
+
 name: CD - Update Kubernetes Manifests
 
 on:
@@ -75,7 +75,16 @@ jobs:
             exit 0
           fi
 
+
           git commit -m "Deploy ${IMAGE_TAG}"
           git pull --rebase origin main
           git push origin HEAD:main
-```
+
+
+
+
+
+
+
+
+
