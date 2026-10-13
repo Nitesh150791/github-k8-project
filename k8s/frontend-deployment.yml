@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: devboard-frontend
-        image: niteshmore15/devboard-frontend:ba6642727c1f1a9590a595491fefb19fb2fda091
+        image: niteshmore15/devboard-frontend:15b1b053c136799303e835847d75248f7652738d
         ports:
         - containerPort: 4173
         resources:
