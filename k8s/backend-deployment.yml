@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: devboard-backend
-        image: niteshmore15/devboard-backend:80c0ab289bd247d3f11372ffefd791c8917f4eec
+        image: niteshmore15/devboard-backend:a2838c78104072dc416400ea048c6c22cde26eec
         ports:
           - containerPort: 8080
         env:
